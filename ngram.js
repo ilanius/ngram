@@ -11,7 +11,9 @@ function readFile( fName ) {
 
 } 
 
-var nGram = {};
+var nGram = {
+    'total1':0, 'total2':0, 'total3':0, 'total4':0 
+};
 
 function nGramAdd( word, n ) {
     word = ' ' + word + ' ';
@@ -19,6 +21,7 @@ function nGramAdd( word, n ) {
         var prt = word.substring( i, i+n );
         nGram[prt] ? nGram[prt]++ : nGram[prt] = 1;
     }
+    nGram['total'+n]++;
 }
 
 function nGramOut() {
@@ -29,13 +32,20 @@ function nGramOut() {
 
 function gramTest( word, n ) {
     word = (' ' + word.trim() + ' ');
+    var p = 1;
     for ( var i = 0; i + n < word.length; i++ ) {
         var prt = word.substring( i, i+n );
-        var v = nGram[prt] ? nGram[prt] : 0;
+        var prt0 = word.substring( i, i+n-1 );
+        var v = (nGram[prt] ? nGram[prt] : 0) / nGram['total'+n];
+        var v0 = ( nGram[prt0] ? nGram[prt0] : 0 )/ nGram['total'+(n-1)];
+        console.log( v + ' ' + v0 + ' ' + v/v0 );
         if ( v == 0 ) {
             console.log( word + ': ' + prt );
         }
+        p *= v/v0;
     }
+    console.log( 'p:' + p );
+    return p;
 }
 
 var txt = readFile( 'aftonbladet23mars2022.txt' ) + ' ';
@@ -44,6 +54,7 @@ var txt = readFile( 'aftonbladet23mars2022.txt' ) + ' ';
 var words = txt.split( /[ ,.;!?"'+\n\r-]+/ );
 words = words.filter( word => ( word.length > 0 && !word.match(/^[0-9A-ZÅÄÖ]/ ) ) );  // filtrera bort siffror, namn
 for ( i in words ) {
+    nGramAdd( words[i], 1 );
     nGramAdd( words[i], 2 );
     // nGramAdd( words[i], 3 );
     console.log( i + ' ' + words[i] );
@@ -52,7 +63,7 @@ for ( i in words ) {
 nGramOut();
 
 console.log( '---------------------------------------');
-gramTest( 'lika barn leka bäst häst ', 2 );
-gramTest( 'lika barn leka bäst häst ', 3 );
+gramTest( 'leker', 2 );
+gramTest( 'lekker', 2 );
 
 

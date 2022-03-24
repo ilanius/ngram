@@ -1,2 +1,2 @@
 # ngram
-javascript code for spelling
+javascript code for spelling correction
