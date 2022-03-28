@@ -18,17 +18,17 @@ function readFile( fName ) {
 } 
 
 function nGramCheck( nGram, word, n ) {
-    word = word.trim(); //  (' ' + word.trim() + ' ');
+    word = word.trim() + ' '; //  (' ' + word.trim() + ' ');
     var p = 1, pmin = 1e9, prtmin, pos;
     for ( var i = 0; i + n < word.length; i++ ) {
         var part1 = word.substring( i, i+n );
         var part0 = word.substring( i, i+n-1 );
         var v1 = ( nGram[part1] ? nGram[part1] : 0) / nGram['total'+n];
         var v0 = ( nGram[part0] ? nGram[part0] : 0 )/ nGram['total'+(n-1)];
-        // console.log( 'v0:' + v0 + ' v1:' + v1 );
-        p *= (v0!=0 ? v1/v0 : 0);
+        p *= Math.pow( (v0!=0 ? v1/v0 : 0), 0.333 );
+        p = Math.trunc( p * 1000000 ) / 1000000;
         if ( v1/v0 < pmin ) { 
-            pmin = v1/v0;
+            pmin = Math.trunc( 1000000 * v1/v0 ) / 1000000; 
             prtmin = part1;
             pos = i;
         }
@@ -36,32 +36,21 @@ function nGramCheck( nGram, word, n ) {
     return { p, pmin, prtmin, word, pos };  /* <== cool syntax */
 }
 function nGramSuggest( nGram, stat ) {
-    var pos = +stat['pos'];
-    var pstat = stat['p'];
-
-    var prefix = stat['word'].substring(0,pos);
-    var suffix = stat['word'].substring(pos+3);
-    console.log( prefix + ':' + suffix );
-
-    var suggs = [];
+    var prefix = stat['word'].substring(0, +stat['pos'] );
+    var suffix = stat['word'].substring( stat['pos']+3);
+    var suggestions = [];
     for ( var gram in nGram ) {
-        if ( gram.length == 1 ) continue;
-        var sugg = prefix + gram + suffix;
-        statsugg = nGramCheck( nGram, sugg, 3 );
-        if ( statsugg['p'] == 0 ) continue;
-        suggs.push( sugg );
-        console.log( statsugg ); 
+        if ( gram.length > 4 || gram.length == 1 ) continue;
+        var suggestion = prefix + gram + suffix;
+        sStat = nGramCheck( nGram, suggestion, 3 );
+        if ( sStat['p'] == 0 ) continue;
+        suggestions.push( sStat );
     }
-    suggs = suggs.sort( (a,b) => +a['p'] - +b['p'] );
-    for ( var i in suggs ) {
-        console.log( suggs[i] );
-    }
-    // suggs.splice( 100 );
-    // console.log( suggs );
-    return suggs; 
+    suggestions.sort( (a,b) => b.p - a.p ); // sort descending order
+    return suggestions; 
 }
 function nGramAdd( nGram, word, n ) {
-    word = word.trim(); // ' ' + word + ' ';
+    word = word.trim() + ' '; // ' ' + word + ' ';
     for ( var i =0; i + n < word.length; i++ ) {
         var prt = word.substring( i, i+n );
         if ( nGram[prt] ) {
@@ -87,9 +76,26 @@ function nGramStatistics( txt ) {
         nGramAdd( nGram, words[i], 1 );
         nGramAdd( nGram, words[i], 2 );
         nGramAdd( nGram, words[i], 3 );
-        // nGramAdd( nGram, words[i], 4 );
+        nGramAdd( nGram, words[i], 4 );
     }
     return nGram;
+}
+function processTest( txt, testLista ) {
+    var nGram = nGramStatistics( txt );
+    console.log( nGram['total'] );
+    console.log( nGram['dox'] );
+    
+    for ( var i in testLista ) {
+        var stat = nGramCheck( nGram, testLista[i], 3 );
+        console.log( stat );
+        var suggestions = nGramSuggest( nGram, stat );
+        console.log( suggestions.length + ' suggestions for ' + testLista[i] );
+        // check against source txt - is made up word there?
+        suggestions = suggestions.filter( (w) => { return txt.indexOf( w['word'].trim() )>0; }  );
+        console.log( 'Final suggestions: '); 
+        // console.log( suggestions );
+    }
+    console.log( ' --- DONE                 --- ');
 }
 
 function cleanText( txt ) {
@@ -103,27 +109,16 @@ function cleanText( txt ) {
     txt = txt.replace( / +/ig, ' ');
     return txt;
 }
-function processTest( txt, testLista ) {
-    var nGram = nGramStatistics( txt );
-    console.log( nGram['total'] );
-    console.log( nGram['dox'] );
-    
-    for ( var i in testLista ) {
-        var stat = nGramCheck( nGram, testLista[i], 3 );
-        console.log( stat );
-        var sugg = nGramSuggest( nGram, stat );
-       //  console.log( sugg );
-    }
-    console.log( ' --- DONE                 --- ');
-}
 
 var testLista = [
-  /*  'snaka',       'lekker',  
-    'krata',       'poke', 
-    'junggfru',    'leijon',*/
-    'paraddox'
+    // 'praata',    
+    'poke',    
+    // 'junggfru',    'leijon',    'paraddox'
 ];
-if ( true ) {
+
+var synchronous = true;
+
+if ( synchronous ) {
     /* synchronous part */
     var files = [
         'aftonbladet23mars2022.txt',
