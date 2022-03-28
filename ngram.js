@@ -35,20 +35,6 @@ function nGramCheck( nGram, word, n ) {
     }
     return { p, pmin, prtmin, word, pos };  /* <== cool syntax */
 }
-function nGramSuggest( nGram, stat ) {
-    var prefix = stat['word'].substring(0, +stat['pos'] );
-    var suffix = stat['word'].substring( stat['pos']+3);
-    var suggestions = [];
-    for ( var gram in nGram ) {
-        if ( gram.length > 4 || gram.length == 1 ) continue;
-        var suggestion = prefix + gram + suffix;
-        sStat = nGramCheck( nGram, suggestion, 3 );
-        if ( sStat['p'] == 0 ) continue;
-        suggestions.push( sStat );
-    }
-    suggestions.sort( (a,b) => b.p - a.p ); // sort descending order
-    return suggestions; 
-}
 function nGramAdd( nGram, word, n ) {
     word = word.trim() + ' '; // ' ' + word + ' ';
     for ( var i =0; i + n < word.length; i++ ) {
@@ -80,6 +66,25 @@ function nGramStatistics( txt ) {
     }
     return nGram;
 }
+function nGramSuggest( nGram, stat ) {
+    var prefix = stat['word'].substring(0, stat['pos']+1 );
+    var suffix = stat['word'].substring( stat['pos']+2);
+    var a = stat['word'].charAt( stat['pos'] );
+    var b = stat['word'].charAt( stat['pos'] +2);
+    
+    console.log( prefix + ':' + suffix + ' a:' + a + ' b:' + b );
+    var suggestions = {};
+    for ( var gram in nGram ) {
+        if ( gram.length > 4 || gram.length == 1 ) continue;
+        if ( ! (gram.charAt(0) == a && gram.charAt( gram.length - 1 ) == b  ) ) continue;
+        gram = gram.substring(1, gram.length-1 );
+        var suggestion = prefix + gram + suffix;
+        sStat = nGramCheck( nGram, suggestion, 3 );
+        if ( sStat['p'] == 0 ) continue;
+        suggestions[ suggestion ] = sStat; 
+    }
+    return suggestions; 
+}
 function processTest( txt, testLista ) {
     var nGram = nGramStatistics( txt );
     console.log( nGram['total'] );
@@ -87,11 +92,16 @@ function processTest( txt, testLista ) {
     
     for ( var i in testLista ) {
         var stat = nGramCheck( nGram, testLista[i], 3 );
-        console.log( stat );
+        console.log( 'Unlikely part: ' + stat['prtmin'] );
         var suggestions = nGramSuggest( nGram, stat );
-        console.log( suggestions.length + ' suggestions for ' + testLista[i] );
+        console.log( Object.keys( suggestions ).length + ' suggestions for ' + testLista[i] );
         // check against source txt - is made up word there?
-        suggestions = suggestions.filter( (w) => { return txt.indexOf( w['word'].trim() )>0; }  );
+        for ( var suggestion in suggestions ) {
+            console.log( suggestion + "\tp:" + suggestions[suggestion]['p'] );
+            // check against dictionary
+            // do min edit distance 
+        }
+        // suggestions = suggestions.filter( (w) => { return txt.indexOf( w['word'].trim() )>0; }  );
         console.log( 'Final suggestions: '); 
         // console.log( suggestions );
     }
@@ -99,7 +109,6 @@ function processTest( txt, testLista ) {
 }
 
 function cleanText( txt ) {
-    console.log('Removing non text');
     txt = txt.replace( /[\r\n]+/igm, ' ');
     txt = txt.replace( /<script[\s\S]*?<\/script>/ig, ' ');
     txt = txt.replace( /<style[\s\S]*?<\/style>/ig, ' ');
@@ -111,9 +120,11 @@ function cleanText( txt ) {
 }
 
 var testLista = [
-    // 'praata',    
+    'praata',    
     'poke',    
-    // 'junggfru',    'leijon',    'paraddox'
+    'junggfru',    
+    'leijon',    
+    'paraddox'
 ];
 
 var synchronous = true;
@@ -149,5 +160,3 @@ if ( synchronous ) {
         processTest( txt, testLista );
   });
 }
-
-
