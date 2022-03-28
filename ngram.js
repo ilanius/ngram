@@ -72,17 +72,6 @@ function cleanText( txt ) {
     return txt;
 }
 
-function processText( txt ) {
-    var nGram = nGramStatistics( txt );
-
-    var testTxt = 'snacka snaka lekker leker krata kratta kaskad kasskad karrlskrona poke projektill';
-    var testLista = testTxt.split( / / );
-    for ( var i in testLista ) {
-        var stat = nGramCheck( nGram, testLista[i], 3 );
-        console.log( stat );
-    }
-}
-
 // var txt = readFile( 'aftonbladet23mars2022.txt' ) + ' ';
 
 const request = require('request');
@@ -93,7 +82,7 @@ var urls = [
     'https://www.gutenberg.org/cache/epub/57052/pg57052.txt', // Strindberg Röda Rummet
 ];
 
-request( urls[2], (error, response, txt) => {
+request( urls[1], (error, response, txt) => {
     if (error) {
         console.error(`Could not send request to API: ${error.message}`);
         return;
@@ -105,10 +94,17 @@ request( urls[2], (error, response, txt) => {
     }
     txt = cleanText( txt );
     console.log( ' --- START TEXT FROM HTML --- ');
-    console.log( txt );
+    console.log( 'corpus från:' + urls[1] +"\n" );
     console.log( ' --- END TEXT FROM HTML   --- ');
     console.log( ' --- START processText    --- ');
-    processText( txt );
+    var nGram = nGramStatistics( txt );
+
+    var testTxt = 'snacka snaka lekker leker krata kratta kaskad kasskad karrlskrona poke projektill';
+    var testLista = testTxt.split( / / );
+    for ( var i in testLista ) {
+        var stat = nGramCheck( nGram, testLista[i], 3 );
+        console.log( stat );
+    }
     console.log( ' --- DONE                 --- ');
 });
 
