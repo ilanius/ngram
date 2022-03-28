@@ -1,5 +1,8 @@
-/* apt update */
-/* apt install npm */
+/* 
+sudo apt update 
+sudo apt install npm 
+npm install request
+*/
 
 /* ********************************************* */
 // https://nodejs.dev/learn/reading-files-with-nodejs
