@@ -1,10 +1,8 @@
-/* 
-sudo apt update 
-sudo apt install npm 
-npm install request    */
-
-/* ********************************************* */
-// https://nodejs.dev/learn/reading-files-with-nodejs
+/* ********************************************* */ 
+/* sudo apt update 
+/* sudo apt install npm 
+/* npm install request    
+/* https://nodejs.dev/learn/reading-files-with-nodejs
 /* For use with nodejs  ************************ */
 /* ********************************************* */
 function readFile( fName ) {
@@ -16,7 +14,6 @@ function readFile( fName ) {
         console.error(err)
     }
 } 
-
 function nGramCheck( nGram, word, n ) {
     word = word.trim() + ' '; //  (' ' + word.trim() + ' ');
     var p = 1, pmin = 1e9, prtmin, pos;
@@ -71,7 +68,6 @@ function nGramSuggest( nGram, stat ) {
     var suffix = stat['word'].substring( stat['pos']+2);
     var a = stat['word'].charAt( stat['pos'] );
     var b = stat['word'].charAt( stat['pos'] +2);
-    
     console.log( prefix + ':' + suffix + ' a:' + a + ' b:' + b );
     var suggestions = {};
     for ( var gram in nGram ) {
@@ -92,7 +88,7 @@ function processTest( txt, testLista ) {
     
     for ( var i in testLista ) {
         var stat = nGramCheck( nGram, testLista[i], 3 );
-        console.log( 'Unlikely part: ' + stat['prtmin'] );
+        console.log( testLista[i] + ' Unlikely part: ' + stat['prtmin'] );
         var suggestions = nGramSuggest( nGram, stat );
         console.log( Object.keys( suggestions ).length + ' suggestions for ' + testLista[i] );
         // check against source txt - is made up word there?
@@ -107,7 +103,6 @@ function processTest( txt, testLista ) {
     }
     console.log( ' --- DONE                 --- ');
 }
-
 function cleanText( txt ) {
     txt = txt.replace( /[\r\n]+/igm, ' ');
     txt = txt.replace( /<script[\s\S]*?<\/script>/ig, ' ');
@@ -118,17 +113,15 @@ function cleanText( txt ) {
     txt = txt.replace( / +/ig, ' ');
     return txt;
 }
-
 var testLista = [
     'praata',    
     'poke',    
     'junggfru',    
     'leijon',    
-    'paraddox'
+    'paraddox',
+    'lekka'
 ];
-
 var synchronous = true;
-
 if ( synchronous ) {
     /* synchronous part */
     var files = [
